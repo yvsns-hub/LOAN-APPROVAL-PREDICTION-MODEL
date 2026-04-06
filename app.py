@@ -109,6 +109,10 @@ with col2:
         
         prediction = model.predict(features)
         
+        # 🚨 HARD-CODED SAFETY CHECK (Guarantees rejection for low CIBIL)
+        if cibil_score < 450:
+            prediction = [0]
+        
         if prediction[0] == 1:
             st.markdown("""
                 <div class="result-box approved">
