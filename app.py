@@ -61,6 +61,8 @@ col1, col2 = st.columns([1, 1])
 
 with col1:
     st.subheader("👤 Personal Details")
+    # RESTORING Loan ID as per original loan.py
+    loan_id = st.number_input("Loan ID", min_value=1, value=1001, help="Unique identifier for your loan application")
     no_of_dependents = st.number_input("Number of Dependents", min_value=0, max_value=10, value=0)
     education = st.selectbox("Education Level", ["Graduate", "Not Graduate"])
     self_employed = st.selectbox("Self Employed?", ["Yes", "No"])
@@ -81,16 +83,12 @@ with col2:
     st.markdown("<br><br>", unsafe_allow_html=True)
     if st.button("🚀 Predict Loan Status"):
         # Preprocessing inputs
-        # Convert term to months for consistency with training data (if needed)
-        # Assuming training data uses years based on loan.py logic
-        
         edu_val = 1 if education == "Graduate" else 0
         se_val = 1 if self_employed == "Yes" else 0
         
-        # Creating features array
-        # Order: [no_of_dependents, education, self_employed, income_annum, loan_amount, loan_term, cibil_score, residential_assets_value, commercial_assets_value, luxury_assets_value, bank_asset_value]
-        # Note: loan_id was dropped in training
-        features = np.array([[no_of_dependents, edu_val, se_val, income_annum, 
+        # Creating features array (MATCHING original 12 features sequence)
+        # Sequence: [loan_id, dependents, education, self_employed, income_annum, loan_amount, term, cibil, residential, commercial, luxury, bank]
+        features = np.array([[loan_id, no_of_dependents, edu_val, se_val, income_annum, 
                              loan_amount, loan_term, cibil_score, 
                              residential_assets_value, commercial_assets_value, 
                              luxury_assets_value, bank_asset_value]])

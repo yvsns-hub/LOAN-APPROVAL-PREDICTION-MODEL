@@ -22,8 +22,9 @@ def train_model():
     df['education'] = df['education'].map({'graduate': 1, 'not graduate': 0})
     df['self_employed'] = df['self_employed'].map({'yes': 1, 'no': 0})
 
-    # Prepare features and target
-    X = df.drop(['loan_id', 'loan_status'], axis=1)
+    # Prepare features and target (RESTORING loan_id as per original loan.py)
+    # Order: [loan_id, no_of_dependents, education, self_employed, income_annum, loan_amount, loan_term, cibil_score, residential_assets_value, commercial_assets_value, luxury_assets_value, bank_asset_value]
+    X = df.drop(['loan_status'], axis=1)
     Y = df['loan_status']
 
     # Train-Test Split
@@ -44,7 +45,7 @@ def train_model():
     with open('loan_model.pkl', 'wb') as f:
         pickle.dump(model, f)
     
-    print("Model saved as loan_model.pkl")
+    print("Model saved as loan_model.pkl (with 12 features)")
 
 if __name__ == "__main__":
     train_model()
