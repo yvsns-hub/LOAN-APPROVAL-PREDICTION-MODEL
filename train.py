@@ -18,6 +18,12 @@ def train_model():
     df['education'] = df['education'].str.lower()
     df['self_employed'] = df['self_employed'].str.lower()
     df['loan_status'] = df['loan_status'].map({'Approved': 1, 'Rejected': 0})
+    
+    # 🚨 CRITICAL FIX: ENFORCING BANKING RULE
+    # Any data point with CIBIL score < 500 should be REJECTED (Target = 0)
+    # This overrides the "Approved" noise in the original dataset for low CIBIL cases.
+    df.loc[df['cibil_score'] < 500, 'loan_status'] = 0
+    
     df['education'] = df['education'].map({'graduate': 1, 'not graduate': 0})
     df['self_employed'] = df['self_employed'].map({'yes': 1, 'no': 0})
     
@@ -30,27 +36,19 @@ def train_model():
     # Train-Test Split
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=3)
 
-    # UPGRADING TO RANDOM FOREST (Stronger thresholds for CIBIL)
-    model = RandomForestClassifier(n_estimators=200, random_state=42)
+    # TRAINING HIGH-PRECISION RANDOM FOREST
+    model = RandomForestClassifier(n_estimators=300, random_state=42)
     model.fit(X_train, Y_train)
 
-    # Verify Importance
-    importances = pd.Series(model.feature_importances_, index=X.columns)
-    print("Feature Importances:")
-    print(importances.sort_values(ascending=False))
-
     # Evaluate
-    train_acc = accuracy_score(Y_train, model.predict(X_train))
     test_acc = accuracy_score(Y_test, model.predict(X_test))
-    
-    print(f'Training Accuracy: {train_acc:.4f}')
-    print(f'Testing Accuracy: {test_acc:.4f}')
+    print(f'Testing Accuracy with Hard Threshold: {test_acc:.4f}')
 
     # Save model
     with open('loan_model.pkl', 'wb') as f:
         pickle.dump(model, f)
     
-    print("Upgraded model saved as loan_model.pkl (Random Forest)")
+    print("Fixed model saved as loan_model.pkl (Enforced CIBIL Rules)")
 
 if __name__ == "__main__":
     train_model()
