@@ -177,4 +177,4 @@ with col2:
             """, unsafe_allow_html=True)
 
 st.markdown("---")
-st.caption("© 2024 AI Suite Professional Security Solutions. Regenerated Multi-Factor Neural Engine.")
+st.caption("© 2026 AI Suite Professional Security Solutions. Regenerated Multi-Factor Neural Engine.")
