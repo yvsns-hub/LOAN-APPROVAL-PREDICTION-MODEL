@@ -15,31 +15,46 @@ st.set_page_config(
 st.markdown("""
 <style>
     .main {
-        background-color: #f8f9fa;
+        background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);
+        color: #e2e8f0;
     }
     .stButton>button {
         width: 100%;
-        background-color: #007bff;
+        background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
         color: white;
-        border-radius: 5px;
-        height: 3em;
+        border: none;
+        border-radius: 8px;
+        height: 3.5em;
         font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        transform: scale(1.02);
+        box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
     }
     .result-box {
-        padding: 2rem;
-        border-radius: 10px;
+        padding: 2.5rem;
+        border-radius: 12px;
         text-align: center;
         margin-top: 2rem;
+        border-width: 2px;
+        border-style: solid;
     }
     .approved {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border-color: #10b981;
     }
     .rejected {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border-color: #ef4444;
+    }
+    .stNumberInput > label, .stSelectbox > label, .stSlider > label {
+        color: #0ea5e9 !important;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -49,11 +64,11 @@ try:
     with open('loan_model.pkl', 'rb') as f:
         model = pickle.load(f)
 except FileNotFoundError:
-    st.error("Model file not found. Please run 'train.py' first to train the model.")
+    st.error("Model file not found. Please run 'train.py' first.")
     st.stop()
 
 # Header
-st.title("🏦 Loan Approval Prediction System")
+st.title("🏦 Loan Approval Intelligence System")
 st.markdown("---")
 
 # Layout
@@ -61,8 +76,7 @@ col1, col2 = st.columns([1, 1])
 
 with col1:
     st.subheader("👤 Personal Details")
-    # RESTORING Loan ID as per original loan.py
-    loan_id = st.number_input("Loan ID", min_value=1, value=1001, help="Unique identifier for your loan application")
+    loan_id = st.number_input("Loan ID", min_value=1, value=1001)
     no_of_dependents = st.number_input("Number of Dependents", min_value=0, max_value=10, value=0)
     education = st.selectbox("Education Level", ["Graduate", "Not Graduate"])
     self_employed = st.selectbox("Self Employed?", ["Yes", "No"])
@@ -70,24 +84,24 @@ with col1:
     st.subheader("💰 Financial Details")
     income_annum = st.number_input("Annual Income (₹)", min_value=10000, value=500000, step=10000)
     loan_amount = st.number_input("Requested Loan Amount (₹)", min_value=10000, value=1000000, step=10000)
-    loan_term = st.number_input("Loan Term (Years)", min_value=1, max_value=20, value=10)
+    loan_term = st.number_input("Loan Term (Years)", min_value=1, max_value=25, value=10)
     cibil_score = st.slider("CIBIL Score", 300, 900, 700)
 
 with col2:
-    st.subheader("🏠 Asset Valuation")
+    st.subheader("🏠 Assets Information")
     residential_assets_value = st.number_input("Residential Assets Value (₹)", min_value=0, value=500000, step=10000)
-    commercial_assets_value = st.number_input("Commercial Assets Value (₹)", min_value=0, value=200000, step=10000)
-    luxury_assets_value = st.number_input("Luxury Assets Value (₹)", min_value=0, value=100000, step=10000)
-    bank_asset_value = st.number_input("Bank Assets Value (₹)", min_value=0, value=300000, step=10000)
+    commercial_assets_value = st.number_input("Commercial Assets Value (₹)", min_value=0, value=0, step=10000)
+    luxury_assets_value = st.number_input("Luxury Assets Value (₹)", min_value=0, value=0, step=10000)
+    bank_asset_value = st.number_input("Bank Assets Value (₹)", min_value=0, value=0, step=10000)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
-    if st.button("🚀 Predict Loan Status"):
-        # Preprocessing inputs
+    if st.button("🚀 EXECUTE PREDICTION ANALYSIS"):
+        # Map values
         edu_val = 1 if education == "Graduate" else 0
         se_val = 1 if self_employed == "Yes" else 0
         
-        # Creating features array (MATCHING original 12 features sequence)
-        # Sequence: [loan_id, dependents, education, self_employed, income_annum, loan_amount, term, cibil, residential, commercial, luxury, bank]
+        # Prepare Feature Vector
+        # Sequence must be: [loan_id, dependents, edu, self_employed, income, loan_amt, term, cibil, res_assets, com_assets, lux_assets, bank_assets]
         features = np.array([[loan_id, no_of_dependents, edu_val, se_val, income_annum, 
                              loan_amount, loan_term, cibil_score, 
                              residential_assets_value, commercial_assets_value, 
@@ -98,17 +112,17 @@ with col2:
         if prediction[0] == 1:
             st.markdown("""
                 <div class="result-box approved">
-                    <h2>✅ Loan Approved</h2>
-                    <p>Congratulations! Based on our analysis, your loan application is likely to be approved.</p>
+                    <h2 style="color: #10b981;">✅ LOAN APPROVED</h2>
+                    <p>Based on our analysis, the applicant meets all eligibility criteria for this loan.</p>
                 </div>
             """, unsafe_allow_html=True)
         else:
             st.markdown("""
                 <div class="result-box rejected">
-                    <h2>❌ Loan Rejected</h2>
-                    <p>We're sorry. Based on our analysis, your loan application is likely to be rejected at this time.</p>
+                    <h2 style="color: #ef4444;">❌ LOAN REJECTED</h2>
+                    <p>Analysis identifies significant risk. The application does not meet the minimum requirements at this time.</p>
                 </div>
             """, unsafe_allow_html=True)
 
 st.markdown("---")
-st.caption("Disclaimer: This tool is for educational purposes and provides an automated prediction based on a machine learning model.")
+st.caption("Disclaimer: This tool provides predictions based on a mathematical model and is intended for illustrative purposes.")
